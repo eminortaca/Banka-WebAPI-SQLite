@@ -41,6 +41,7 @@ namespace BankaApi.Controllers
                 hesap.Ad,
                 hesap.Soyad,
                 hesap.Bakiye,
+                hesap.Id,
                 // İşlemleri tarihe göre sırala (En yeni en üstte)
                 IslemGecmisi = hesap.Islemler.OrderByDescending(i => i.Tarih) 
             });
@@ -155,6 +156,17 @@ namespace BankaApi.Controllers
                     return StatusCode(500, "Transfer sırasında bir hata oluştu: " + ex.Message);
                 }
             }
+        }
+        // 5. Yeni Müşteri Oluştur (POST)
+        [HttpPost("olustur")]
+        public IActionResult HesapOlustur([FromBody] Dtos.HesapOlusturDto istek)
+        {
+            var yeniHesap = new Hesap(istek.Ad, istek.Soyad, istek.BaslangicBakiyesi);
+            
+            _context.Hesaplar.Add(yeniHesap);
+            _context.SaveChanges();
+
+            return Ok($"Yeni müşteri oluşturuldu: {yeniHesap.Ad} {yeniHesap.Soyad} (ID: {yeniHesap.Id})");
         }
     }
 }
