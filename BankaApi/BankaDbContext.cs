@@ -9,5 +9,7 @@ namespace BankaApi
 
         // Bu satır, veritabanında "Hesaplar" adında bir tablo oluşturur.
         public DbSet<Hesap> Hesaplar { get; set; }
+        // veri tabanına  işlemleri tablosu koyar   
+        public DbSet<Islem> Islemler { get; set; }
     }
 }

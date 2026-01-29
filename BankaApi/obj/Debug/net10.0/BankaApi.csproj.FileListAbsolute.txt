@@ -150,3 +150,4 @@ C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\runtimes\win-arm\nativ
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\ASUS\Desktop\BankaApi\BankaApi\obj\Debug\net10.0\BankaApi.sourcelink.json
