@@ -100,5 +100,61 @@ namespace BankaApi.Controllers
 
             return Ok($"{miktar} TL çekildi. Kalan Bakiye: {hesap.Bakiye}");
         }
+        // 4. Havale / Para Transferi (ACID Transaction içerir)
+        [HttpPost("transfer")]
+        public IActionResult ParaTransferi([FromBody] Dtos.ParaTransferiDto istek)
+        {
+            // 1. Transaction Başlat (Ya Hep Ya Hiç Prensibi)
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    // Gönderen ve Alıcıyı Bul
+                    var gonderen = _context.Hesaplar.FirstOrDefault(h => h.Id == istek.GonderenHesapId);
+                    var alici = _context.Hesaplar.FirstOrDefault(h => h.Id == istek.AliciHesapId);
+
+                    // Validasyonlar (Kontroller)
+                    if (gonderen == null) return NotFound("Gönderen hesap bulunamadı.");
+                    if (alici == null) return NotFound("Alıcı hesap bulunamadı.");
+                    if (gonderen.Bakiye < istek.Tutar) return BadRequest("Yetersiz bakiye!");
+
+                    // A) Gönderenden Para Düş
+                    gonderen.Bakiye -= istek.Tutar;
+                    _context.Islemler.Add(new Islem
+                    {
+                        Id = Guid.NewGuid(),
+                        Aciklama = $"Transfer Gönderilen -> {alici.Ad} {alici.Soyad}",
+                        Tutar = -istek.Tutar,
+                        Tarih = DateTime.Now,
+                        HesapId = gonderen.Id
+                    });
+
+                    // B) Alıcıya Para Ekle
+                    alici.Bakiye += istek.Tutar;
+                    _context.Islemler.Add(new Islem
+                    {
+                        Id = Guid.NewGuid(),
+                        Aciklama = $"Transfer Gelen <- {gonderen.Ad} {gonderen.Soyad}",
+                        Tutar = istek.Tutar,
+                        Tarih = DateTime.Now,
+                        HesapId = alici.Id
+                    });
+
+                    // Değişiklikleri Veritabanına Yansıt
+                    _context.SaveChanges();
+
+                    // Hata çıkmadıysa işlemi onayla ve kalıcı hale getir
+                    transaction.Commit(); 
+
+                    return Ok($"Transfer başarılı. {gonderen.Ad} -> {alici.Ad}: {istek.Tutar} TL");
+                }
+                catch (Exception ex)
+                {
+                    // Herhangi bir hata olursa yapılan TÜM işlemleri geri al (Para iade edilir)
+                    transaction.Rollback();
+                    return StatusCode(500, "Transfer sırasında bir hata oluştu: " + ex.Message);
+                }
+            }
+        }
     }
 }
