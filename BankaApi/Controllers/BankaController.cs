@@ -115,6 +115,23 @@ namespace BankaApi.Controllers
                     var alici = _context.Hesaplar.FirstOrDefault(h => h.Id == istek.AliciHesapId);
 
                     // Validasyonlar (Kontroller)
+
+                    // Kural 1: Kullanıcı kendine para gönderemez
+                    if (istek.GonderenHesapId == istek.AliciHesapId)
+                        return BadRequest("Hata: Kendinize para transferi yapamazsınız.");
+
+                    // Kural 2: Negatif veya Sıfır tutar girilemez
+                    if (istek.Tutar <= 0)
+                        return BadRequest("Hata: Transfer tutarı 0'dan büyük olmalıdır.");
+
+                    // Kural 3: Hesaplar gerçekten var mı kontrol et
+                    if (gonderen == null) return NotFound("Hata: Gönderen hesap bulunamadı.");
+                    if (alici == null) return NotFound("Hata: Alıcı hesap bulunamadı.");
+
+                    // Kural 4: Yetersiz Bakiye
+                    if (gonderen.Bakiye < istek.Tutar) 
+                        return BadRequest($"Hata: Yetersiz bakiye! Mevcut bakiyeniz: {gonderen.Bakiye}");
+                    // Tüm kontroller geçildiyse işleme devam et
                     if (gonderen == null) return NotFound("Gönderen hesap bulunamadı.");
                     if (alici == null) return NotFound("Alıcı hesap bulunamadı.");
                     if (gonderen.Bakiye < istek.Tutar) return BadRequest("Yetersiz bakiye!");
