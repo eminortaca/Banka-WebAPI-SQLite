@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BankaApi.Migrations
 {
     /// <inheritdoc />
-    public partial class GuidGecisi : Migration
+    public partial class OtomatikKurulum : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,6 +23,21 @@ namespace BankaApi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Hesaplar", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Kullanicilar",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    KullaniciAdi = table.Column<string>(type: "TEXT", nullable: false),
+                    Sifre = table.Column<string>(type: "TEXT", nullable: false),
+                    Role = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Kullanicilar", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -57,6 +72,9 @@ namespace BankaApi.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Islemler");
+
+            migrationBuilder.DropTable(
+                name: "Kullanicilar");
 
             migrationBuilder.DropTable(
                 name: "Hesaplar");

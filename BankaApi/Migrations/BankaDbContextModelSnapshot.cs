@@ -15,7 +15,7 @@ namespace BankaApi.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
             modelBuilder.Entity("BankaApi.Models.Hesap", b =>
                 {
@@ -63,6 +63,29 @@ namespace BankaApi.Migrations
                     b.HasIndex("HesapId");
 
                     b.ToTable("Islemler");
+                });
+
+            modelBuilder.Entity("BankaApi.Models.Kullanici", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("KullaniciAdi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sifre")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Kullanicilar");
                 });
 
             modelBuilder.Entity("BankaApi.Models.Islem", b =>

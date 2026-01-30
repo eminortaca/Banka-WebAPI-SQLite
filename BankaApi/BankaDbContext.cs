@@ -11,5 +11,7 @@ namespace BankaApi
         public DbSet<Hesap> Hesaplar { get; set; }
         // veri tabanına  işlemleri tablosu koyar   
         public DbSet<Islem> Islemler { get; set; }
+        
+        public DbSet<Kullanici> Kullanicilar { get; set; }
     }
 }
