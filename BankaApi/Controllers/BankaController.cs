@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using BankaApi.Models;
-using Microsoft.EntityFrameworkCore; // Include için gerekli
+using Microsoft.EntityFrameworkCore; 
+using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System;
 
 namespace BankaApi.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class BankaController : ControllerBase
     {
