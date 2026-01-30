@@ -174,16 +174,23 @@ namespace BankaApi.Controllers
                 }
             }
         }
-        // 5. Yeni Müşteri Oluştur (POST)
         [HttpPost("olustur")]
         public IActionResult HesapOlustur([FromBody] Dtos.HesapOlusturDto istek)
         {
-            var yeniHesap = new Hesap(istek.Ad, istek.Soyad, istek.BaslangicBakiyesi);
+            // İŞ KURALI: Her yeni hesap 0 bakiye ile başlar.
+            // DTO'dan bakiye gelmediği için, constructor'a elle '0' veriyoruz.
+            var yeniHesap = new Hesap(istek.Ad, istek.Soyad, 0); 
             
             _context.Hesaplar.Add(yeniHesap);
             _context.SaveChanges();
 
-            return Ok($"Yeni müşteri oluşturuldu: {yeniHesap.Ad} {yeniHesap.Soyad} (ID: {yeniHesap.Id})");
+            return Ok(new 
+            {
+                Mesaj = "Hesap başarıyla açıldı.",
+                Musteri = $"{yeniHesap.Ad} {yeniHesap.Soyad}",
+                HesapId = yeniHesap.Id,
+                Bakiye = yeniHesap.Bakiye // Burası her zaman 0.00 gelecek
+            });
         }
     }
 }

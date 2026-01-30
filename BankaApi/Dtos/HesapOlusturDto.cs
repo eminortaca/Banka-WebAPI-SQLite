@@ -6,6 +6,5 @@ namespace BankaApi.Dtos
     {
         public string Ad { get; set; }
         public string Soyad { get; set; }
-        public decimal BaslangicBakiyesi { get; set; }
     }
 }
