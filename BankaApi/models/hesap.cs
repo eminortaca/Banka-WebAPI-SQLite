@@ -1,29 +1,19 @@
-using System;
-using System.Collections.Generic;
-
 namespace BankaApi.Models
 {
     public class Hesap
     {
-        public Guid Id { get; set; }  // int yerine Guid yaptık
-        public string Ad { get; set; }
-        public string Soyad { get; set; }
-        public decimal Bakiye { get; set; } // public set (açık)
+        // ✅ Kendi ID'si Guid oldu
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-        public List<Islem> Islemler { get; set; } = new List<Islem>();
+        // ✅ BAĞLANTI BURADA: Artık Kullanıcı'nın Guid ID'sini tutacak
+        public Guid KullaniciId { get; set; } 
 
-        public Hesap(string ad, string soyad, decimal baslangicBakiyesi)
-        {
-            Id = Guid.NewGuid(); // ÖNEMLİ: Yeni oluşurken rastgele bir kimlik veriyoruz!
-            Ad = ad;
-            Soyad = soyad;
-            Bakiye = baslangicBakiyesi;
-        }
+        // Transfer için kullanılan 6 haneli Banka Numarası (Bu int kalmalı, IBAN gibi düşün)
+        public int HesapNo { get; set; } 
 
-        public Hesap() 
-        { 
-             // Boş constructor çalışırsa da ID oluşsun
-             Id = Guid.NewGuid(); 
-        } 
+        public string Ad { get; set; } = string.Empty;
+        public string Soyad { get; set; } = string.Empty;
+        
+        public decimal Bakiye { get; set; }
     }
 }

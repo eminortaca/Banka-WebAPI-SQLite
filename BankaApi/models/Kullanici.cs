@@ -1,8 +1,10 @@
-namespace BankaApi.Models // <--- Burası "BankaApi.Models" olmalı
+namespace BankaApi.Models
 {
     public class Kullanici
     {
-        public int Id { get; set; }
+        // ✅ DEĞİŞİKLİK BURADA: int yerine Guid yaptık
+        public Guid Id { get; set; } = Guid.NewGuid(); 
+
         public string KullaniciAdi { get; set; } = string.Empty;
         public string Sifre { get; set; } = string.Empty;
         public string Role { get; set; } = "Musteri";

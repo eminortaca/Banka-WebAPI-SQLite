@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using BankaApi.Models;
 using BankaApi.Dtos;
-using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 
 namespace BankaApi.Controllers
@@ -24,61 +22,76 @@ namespace BankaApi.Controllers
             _configuration = configuration;
         }
 
+        // ✅ KAYIT OL (Ad ve Soyad Ekli)
         [HttpPost("register")]
-        public IActionResult Register([FromBody] KayitOlDto istek)
+        public IActionResult Register(KayitOlDto istek)
         {
-            // Kullanıcı zaten var mı?
-            if (_context.Kullanicilar.Any(u => u.KullaniciAdi == istek.KullaniciAdi))
+            if (_context.Kullanicilar.Any(k => k.KullaniciAdi == istek.KullaniciAdi))
             {
                 return BadRequest("Bu kullanıcı adı zaten alınmış.");
             }
 
-            // Şifreyi Hash'le (BCrypt ile güvenli hale getir)
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(istek.Sifre);
-
+            // 1. Kullanıcıyı Oluştur
             var yeniKullanici = new Kullanici
             {
                 KullaniciAdi = istek.KullaniciAdi,
-                Sifre = passwordHash,
+                Sifre = istek.Sifre,
                 Role = "Musteri"
             };
 
             _context.Kullanicilar.Add(yeniKullanici);
             _context.SaveChanges();
 
-            return Ok("Kullanıcı başarıyla oluşturuldu.");
+            // 2. Hesabı Oluştur (Artık Ad ve Soyad DTO'dan geliyor)
+            var yeniHesap = new Hesap
+            {
+                KullaniciId = yeniKullanici.Id,
+                Ad = istek.Ad,       // ✨ YENİ: Formdan gelen Ad
+                Soyad = istek.Soyad, // ✨ YENİ: Formdan gelen Soyad
+                HesapNo = new Random().Next(100000, 999999), 
+                Bakiye = 0 
+            };
+
+            _context.Hesaplar.Add(yeniHesap);
+            _context.SaveChanges();
+
+            return Ok(new { mesaj = "Kayıt başarılı. Hesabınız oluşturuldu.", hesapNo = yeniHesap.HesapNo });
         }
 
+        // ✅ GİRİŞ YAP (Soyad Kontrollü)
         [HttpPost("login")]
-        public IActionResult Login([FromBody] GirisYapDto istek)
+        public IActionResult Login(GirisYapDto istek)
         {
-            var kullanici = _context.Kullanicilar.FirstOrDefault(u => u.KullaniciAdi == istek.KullaniciAdi);
+            // 1. Kullanıcı Adı ve Şifre Kontrolü
+            var user = _context.Kullanicilar.FirstOrDefault(k => k.KullaniciAdi == istek.KullaniciAdi && k.Sifre == istek.Sifre);
+            
+            if (user == null) return Unauthorized("Kullanıcı adı veya şifre yanlış.");
 
-            if (kullanici == null)
+            // 2. ✨ YENİ: Soyad Kontrolü (Güvenlik Önlemi)
+            // Kullanıcının hesabını buluyoruz
+            var hesap = _context.Hesaplar.FirstOrDefault(h => h.KullaniciId == user.Id);
+
+            // Eğer hesap yoksa veya girilen soyad veritabanındakiyle uyuşmuyorsa REDDET
+            // ToLower() kullanarak büyük/küçük harf hatasını engelliyoruz
+            if (hesap == null || hesap.Soyad.ToLower() != istek.Soyad.ToLower())
             {
-                return BadRequest("Kullanıcı bulunamadı.");
+                return Unauthorized("Girdiğiniz Soyad kayıtlı bilgilerle uyuşmuyor!");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(istek.Sifre, kullanici.Sifre))
-            {
-                return BadRequest("Şifre yanlış!");
-            }
-
-            string token = TokenUret(kullanici);
-
-            return Ok(new { Token = token });
+            var token = TokenUret(user);
+            return Ok(new { token = token });
         }
 
-        private string TokenUret(Kullanici kullanici)
+        private string TokenUret(Kullanici user)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, kullanici.KullaniciAdi),
-                new Claim(ClaimTypes.Role, kullanici.Role),
-                new Claim("Id", kullanici.Id.ToString())
+                new Claim(ClaimTypes.Name, user.KullaniciAdi),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "varsayilan_cok_gizli_anahtar_123"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "varsayilan_gizli_anahtar_123456"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

@@ -1,14 +1,17 @@
-namespace BankaApi.Dtos // <--- Burasının "BankaApi.Dtos" olması ÇOK ÖNEMLİ
+namespace BankaApi.Dtos
 {
     public class KayitOlDto
     {
-        public string KullaniciAdi { get; set; }
-        public string Sifre { get; set; }
+        public string Ad { get; set; } = string.Empty;    
+        public string Soyad { get; set; } = string.Empty; 
+        public string KullaniciAdi { get; set; } = string.Empty;
+        public string Sifre { get; set; } = string.Empty;
     }
 
     public class GirisYapDto
     {
-        public string KullaniciAdi { get; set; }
-        public string Sifre { get; set; }
+        public string KullaniciAdi { get; set; } = string.Empty;
+        public string Soyad { get; set; } = string.Empty; 
+        public string Sifre { get; set; } = string.Empty;
     }
 }
