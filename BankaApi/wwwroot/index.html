@@ -3,227 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeoBank - İsimle Giriş</title>
+    <title>NeoBank - Geçmiş İşlemler</title>
     <style>
-        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
-        .container { width: 100%; max-width: 450px; padding: 20px; }
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 30px; margin: 0; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; padding: 20px; padding-bottom: 50px; }
         
-        /* BİLDİRİM KUTUSU (NOTIFICATION) */
-        #notification-area {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            padding: 15px 25px; border-radius: 8px; color: white; font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s;
-            pointer-events: none; /* Görünmezken tıklamayı engelle */
-        }
-        .show-toast { opacity: 1 !important; top: 30px !important; }
-
-        .card { background: var(--card); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .hidden { display: none; }
+        
         input { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         button:hover { filter: brightness(1.1); }
-        .btn-red { background: #ef4444; } 
-        .btn-green { background: #10b981; }
-        .hidden { display: none; }
-        .link { color: #94a3b8; font-size: 0.9rem; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+        .btn-red { background: #ef4444; } .btn-green { background: #10b981; }
 
-        .balance-box { background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left; }
-        .amount { font-size: 2.2rem; font-weight: bold; margin: 5px 0; }
+        /* TABLO TASARIMI */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th { text-align: left; color: var(--muted); padding: 8px; border-bottom: 1px solid #334155; }
+        td { padding: 10px 8px; border-bottom: 1px solid #334155; }
+        .tutar-arti { color: #4ade80; font-weight: bold; }
+        .tutar-eksi { color: #f87171; font-weight: bold; }
+        .tarih { font-size: 0.75rem; color: var(--muted); }
+
+        /* Bildirim */
+        #notify { position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 8px; color: white; opacity: 0; transition: 0.5s; pointer-events: none; }
+        .show-toast { opacity: 1 !important; top: 30px !important; }
     </style>
 </head>
 <body>
 
-    <div id="notification-area"></div>
+    <div id="notify"></div>
 
     <div class="container">
         
         <div id="loginScreen" class="card">
             <h1>NeoBank</h1>
-            <p style="color:#94a3b8;">Lütfen kimlik bilgilerinizle giriş yapın</p>
-            
             <input type="text" id="loginAd" placeholder="Adınız">
             <input type="text" id="loginSoyad" placeholder="Soyadınız">
             <input type="password" id="loginPass" placeholder="Şifre">
-            
             <button onclick="girisYap()">Giriş Yap</button>
-            <div class="link" onclick="ekranDegistir('register')">Hesabın yok mu? Kayıt Ol</div>
+            <p onclick="ekran('register')" style="cursor:pointer; color:var(--muted); font-size:0.9rem;">Hesap Aç</p>
         </div>
 
         <div id="registerScreen" class="card hidden">
             <h1>Kayıt Ol</h1>
-            <input type="text" id="regAd" placeholder="Adınız">
-            <input type="text" id="regSoyad" placeholder="Soyadınız">
-            <input type="password" id="regPass" placeholder="Şifre Belirle">
-            
-            <button class="btn-green" onclick="kayitOl()">Hesap Oluştur</button>
-            <div class="link" onclick="ekranDegistir('login')">Zaten hesabın var mı? Giriş Yap</div>
+            <input type="text" id="regAd" placeholder="Ad">
+            <input type="text" id="regSoyad" placeholder="Soyad">
+            <input type="password" id="regPass" placeholder="Şifre">
+            <button class="btn-green" onclick="kayitOl()">Oluştur</button>
+            <p onclick="ekran('login')" style="cursor:pointer; color:var(--muted); font-size:0.9rem;">Giriş Yap</p>
         </div>
 
-        <div id="dashboardScreen" class="card hidden">
+        <div id="dashboardScreen" class="card hidden" style="text-align: left;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 id="welcomeText" style="margin:0;">Hoşgeldin</h3>
-                <button onclick="cikisYap()" class="btn-red" style="width:auto; padding:5px 15px; font-size:0.8rem;">Çıkış</button>
+                <h3 id="userDisplay" style="margin:0;">...</h3>
+                <button onclick="cikis()" class="btn-red" style="width:auto; padding:5px 15px; font-size:0.8rem;">Çıkış</button>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 20px; border-radius: 15px; margin: 20px 0; color:white;">
+                <div style="opacity:0.8; font-size:0.8rem;">BAKİYE</div>
+                <div style="font-size:2rem; font-weight:bold;" id="balanceDisplay">...</div>
+                <div style="opacity:0.8; font-size:0.9rem; margin-top:5px;">IBAN: <span id="ibanDisplay">...</span></div>
             </div>
 
-            <div class="balance-box">
-                <div style="opacity:0.8; font-size:0.8rem;">GÜNCEL BAKİYE</div>
-                <div class="amount" id="displayBalance">...</div>
-                <div style="opacity:0.8; font-size:0.9rem;">IBAN: <span id="displayIban"></span></div>
-            </div>
-
-            <div style="background:#334155; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <input type="number" id="islemTutar" placeholder="Tutar Giriniz (TL)">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-green" onclick="islemYap('yatir')">Para Yatır</button>
-                    <button class="btn-red" onclick="islemYap('cek')">Para Çek</button>
-                </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <input type="number" id="tutar" placeholder="Tutar" style="grid-column: span 2;">
+                <button class="btn-green" onclick="islem('yatir')">Yatır</button>
+                <button class="btn-red" onclick="islem('cek')">Çek</button>
             </div>
 
             <div style="background:#334155; padding:15px; border-radius:10px;">
-                <input type="number" id="transferAlici" placeholder="Alıcı Hesap No">
-                <input type="number" id="transferTutar" placeholder="Gönderilecek Tutar">
-                <button onclick="transferYap()">Transfer Yap</button>
+                <input type="number" id="aliciNo" placeholder="Alıcı IBAN">
+                <input type="number" id="aliciTutar" placeholder="Tutar">
+                <button onclick="transfer()">Transfer Yap</button>
             </div>
+
+            <h4 style="margin-top:25px; margin-bottom:10px; border-bottom:1px solid #334155; padding-bottom:5px;">Son İşlemler</h4>
+            <table id="historyTable">
+                </table>
         </div>
     </div>
 
     <script>
-        const API_URL = "http://localhost:5212/api"; // Portunu kontrol et!
+        const API = "http://localhost:5212/api"; // Portu kontrol et
 
-        // --- BİLDİRİM GÖSTERME FONKSİYONU ---
-        function notify(mesaj, tip) {
-            const notif = document.getElementById("notification-area");
-            notif.innerText = mesaj;
-            
-            if(tip === "success") notif.style.backgroundColor = "#10b981"; // Yeşil
-            else notif.style.backgroundColor = "#ef4444"; // Kırmızı
-            
-            notif.classList.add("show-toast");
-
-            // 3 saniye sonra kaybolsun
-            setTimeout(() => {
-                notif.classList.remove("show-toast");
-            }, 3000);
+        function ekran(ad) {
+            ['login','register','dashboard'].forEach(id => document.getElementById(id+'Screen').classList.add('hidden'));
+            document.getElementById(ad+'Screen').classList.remove('hidden');
         }
 
-        function ekranDegistir(ekran) {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('dashboardScreen').classList.add('hidden');
-            document.getElementById(ekran + 'Screen').classList.remove('hidden');
+        function notify(msg, type) {
+            const el = document.getElementById('notify');
+            el.innerText = msg;
+            el.style.backgroundColor = type === 'ok' ? '#10b981' : '#ef4444';
+            el.classList.add('show-toast');
+            setTimeout(() => el.classList.remove('show-toast'), 3000);
+        }
+
+        async function post(url, data) {
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if(token) headers['Authorization'] = `Bearer ${token}`;
+            return await fetch(API + url, { method: 'POST', headers, body: JSON.stringify(data) });
         }
 
         async function kayitOl() {
-            const veri = {
+            const res = await post('/Auth/register', {
                 ad: document.getElementById('regAd').value,
                 soyad: document.getElementById('regSoyad').value,
                 sifre: document.getElementById('regPass').value
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/Auth/register`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(veri)
-                });
-                
-                if(res.ok) { 
-                    notify("Kayıt Başarılı! Giriş yapabilirsiniz.", "success");
-                    ekranDegistir('login'); 
-                } else { 
-                    notify(await res.text(), "error"); 
-                }
-            } catch(e) { notify("Sunucu hatası!", "error"); }
+            });
+            if(res.ok) { notify('Kayıt Başarılı!', 'ok'); ekran('login'); }
+            else notify(await res.text(), 'err');
         }
 
         async function girisYap() {
-            const veri = {
+            const res = await post('/Auth/login', {
                 ad: document.getElementById('loginAd').value,
                 soyad: document.getElementById('loginSoyad').value,
                 sifre: document.getElementById('loginPass').value
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/Auth/login`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(veri)
-                });
-
-                if(res.ok) {
-                    const data = await res.json();
-                    localStorage.setItem('token', data.token);
-                    ekranDegistir('dashboard');
-                    verileriGetir();
-                    notify("Giriş Başarılı!", "success");
-                } else { 
-                    notify("Giriş başarısız! Bilgileri kontrol edin.", "error"); 
-                }
-            } catch(e) { notify("Sunucuya ulaşılamadı.", "error"); }
+            });
+            if(res.ok) {
+                const data = await res.json();
+                localStorage.setItem('token', data.token);
+                ekran('dashboard');
+                verileriGetir();
+            } else notify('Giriş başarısız!', 'err');
         }
 
         async function verileriGetir() {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_URL}/Banka`, { headers: { 'Authorization': `Bearer ${token}` } });
-            
-            if(res.status === 401) { cikisYap(); return; }
+            const res = await fetch(`${API}/Banka`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+            if(res.status === 401) { cikis(); return; }
             
             const data = await res.json();
-            // Backend'den { ad, soyad, bakiye, hesapNo } şeklinde tek obje geliyor
-            if(data) {
-                document.getElementById('welcomeText').innerText = `Hoşgeldin, ${data.ad} ${data.soyad}`;
-                document.getElementById('displayIban').innerText = data.hesapNo;
-                document.getElementById('displayBalance').innerText = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(data.bakiye);
-            }
-        }
+            document.getElementById('userDisplay').innerText = `${data.ad} ${data.soyad}`;
+            document.getElementById('balanceDisplay').innerText = data.bakiye + " TL";
+            document.getElementById('ibanDisplay').innerText = data.hesapNo;
 
-        async function islemYap(tip) {
-            const tutar = document.getElementById('islemTutar').value;
-            const token = localStorage.getItem('token');
+            // ✅ TABLOYU DOLDURMA KISMI
+            const tablo = document.getElementById('historyTable');
+            tablo.innerHTML = ""; // Temizle
             
-            if(!tutar) { notify("Lütfen tutar girin.", "error"); return; }
-
-            const res = await fetch(`${API_URL}/Banka/${tip}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ tutar: parseFloat(tutar) })
-            });
-            const data = await res.json();
-            
-            if(res.ok) { 
-                document.getElementById('islemTutar').value = "";
-                verileriGetir(); 
-                notify(data.mesaj, "success"); // ✅ MESAJ BURADA ÇIKACAK
-            } else { 
-                notify(data.mesaj || "Hata oluştu", "error"); 
-            }
-        }
-
-        async function transferYap() {
-            const alici = document.getElementById('transferAlici').value;
-            const tutar = document.getElementById('transferTutar').value;
-            const token = localStorage.getItem('token');
-
-            if(!alici || !tutar) { notify("Tüm alanları doldurun.", "error"); return; }
-
-            const res = await fetch(`${API_URL}/Banka/transfer`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ aliciHesapNo: parseInt(alici), tutar: parseFloat(tutar) })
-            });
-            const data = await res.json();
-            
-            if(res.ok) {
-                document.getElementById('transferAlici').value = "";
-                document.getElementById('transferTutar').value = "";
-                verileriGetir();
-                notify(data.mesaj, "success"); // ✅ MESAJ BURADA ÇIKACAK
+            if(data.gecmis && data.gecmis.length > 0) {
+                data.gecmis.forEach(islem => {
+                    const tarih = new Date(islem.tarih).toLocaleDateString('tr-TR') + ' ' + new Date(islem.tarih).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+                    const renk = islem.tutar > 0 ? 'tutar-arti' : 'tutar-eksi';
+                    const isaret = islem.tutar > 0 ? '+' : '';
+                    
+                    const row = `
+                        <tr>
+                            <td>
+                                <div>${islem.islemTuru}</div>
+                                <div class="tarih">${tarih}</div>
+                                <div class="tarih">${islem.aciklama}</div>
+                            </td>
+                            <td class="${renk}" style="text-align:right;">
+                                ${isaret}${islem.tutar} TL
+                            </td>
+                        </tr>
+                    `;
+                    tablo.innerHTML += row;
+                });
             } else {
-                notify(data.mesaj || "Transfer başarısız", "error");
+                tablo.innerHTML = "<tr><td colspan='2' style='text-align:center; padding:20px; color:#64748b;'>Henüz işlem yok.</td></tr>";
             }
         }
 
-        function cikisYap() { localStorage.clear(); ekranDegistir('login'); }
+        async function islem(tip) {
+            const tutar = document.getElementById('tutar').value;
+            const res = await post(`/Banka/${tip}`, { tutar: parseFloat(tutar) });
+            const json = await res.json();
+            if(res.ok) { document.getElementById('tutar').value=''; verileriGetir(); notify(json.mesaj, 'ok'); }
+            else notify(json.mesaj || 'Hata', 'err');
+        }
 
-        if(localStorage.getItem('token')) { ekranDegistir('dashboard'); verileriGetir(); }
+        async function transfer() {
+            const res = await post('/Banka/transfer', {
+                aliciHesapNo: parseInt(document.getElementById('aliciNo').value),
+                tutar: parseFloat(document.getElementById('aliciTutar').value)
+            });
+            const json = await res.json();
+            if(res.ok) { 
+                document.getElementById('aliciNo').value=''; 
+                document.getElementById('aliciTutar').value=''; 
+                verileriGetir(); 
+                notify(json.mesaj, 'ok'); 
+            } else notify(json.mesaj || 'Hata', 'err');
+        }
+
+        function cikis() { localStorage.clear(); ekran('login'); }
+        if(localStorage.getItem('token')) { ekran('dashboard'); verileriGetir(); }
     </script>
 </body>
 </html>
