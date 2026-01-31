@@ -217,4 +217,4 @@ C:\Users\ASUS\Desktop\BankaApi\BankaApi\obj\Debug\net10.0\BankaApi.genruntimecon
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\obj\Debug\net10.0\ref\BankaApi.dll
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\Scalar.AspNetCore.dll
 C:\Users\ASUS\Desktop\BankaApi\BankaApi\bin\Debug\net10.0\BankaApi.staticwebassets.runtime.json
-C:\Users\ASUS\Desktop\BankaApi\BankaApi\obj\Debug\net10.0\compressed\31am4du2ez-{0}-j23jg0933v-j23jg0933v.gz
+C:\Users\ASUS\Desktop\BankaApi\BankaApi\obj\Debug\net10.0\compressed\31am4du2ez-{0}-o788l6e02s-o788l6e02s.gz

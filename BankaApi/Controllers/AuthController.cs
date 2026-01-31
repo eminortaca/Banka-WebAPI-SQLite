@@ -24,7 +24,7 @@ namespace BankaApi.Controllers
         [HttpPost("register")]
         public IActionResult Register(KayitOlDto istek)
         {
-            // Aynı Ad ve Soyad ile kayıtlı biri var mı?
+            // İsim ve Soyisim kontrolü (Kullanıcı Adı kontrolü yerine)
             if (_context.Kullanicilar.Any(k => k.Ad == istek.Ad && k.Soyad == istek.Soyad))
             {
                 return BadRequest("Bu isim ve soyisimle zaten bir kayıt var.");
@@ -57,7 +57,7 @@ namespace BankaApi.Controllers
         [HttpPost("login")]
         public IActionResult Login(GirisYapDto istek)
         {
-            // ✅ GİRİŞ KONTROLÜ: Ad + Soyad + Şifre
+            // Giriş kontrolü
             var user = _context.Kullanicilar.FirstOrDefault(k => 
                 k.Ad.ToLower() == istek.Ad.ToLower() && 
                 k.Soyad.ToLower() == istek.Soyad.ToLower() && 
@@ -73,7 +73,7 @@ namespace BankaApi.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Ad), // Artık Token'da isim var
+                new Claim(ClaimTypes.Name, user.Ad),
                 new Claim(ClaimTypes.Surname, user.Soyad),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role)

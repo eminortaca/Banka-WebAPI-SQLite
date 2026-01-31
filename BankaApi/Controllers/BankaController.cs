@@ -96,36 +96,46 @@ namespace BankaApi.Controllers
             return Ok(new { mesaj = $"{istek.Tutar} TL çekildi." });
         }
 
-        // 4. Transfer (+Kayıt)
         [HttpPost("transfer")]
         public IActionResult ParaTransferi([FromBody] TransferDto istek)
         {
             var userId = GetUserId();
+            
+            // 1. Gönderen Hesabı ve Kullanıcı Bilgisini Bul
             var gonderenHesap = _context.Hesaplar.FirstOrDefault(h => h.KullaniciId == userId);
+            var gonderenKullanici = _context.Kullanicilar.Find(userId); // İsim için lazım
+
+            // 2. Alıcı Hesabı Bul
             var aliciHesap = _context.Hesaplar.FirstOrDefault(h => h.HesapNo == istek.AliciHesapNo);
 
+            // Hata Kontrolleri
             if (aliciHesap == null) return BadRequest("Alıcı hesap bulunamadı.");
             if (gonderenHesap.HesapNo == aliciHesap.HesapNo) return BadRequest("Kendinize transfer yapamazsınız.");
             if (gonderenHesap.Bakiye < istek.Tutar) return BadRequest("Yetersiz bakiye.");
 
-            // Parayı taşı
+            // 3. Alıcı Kullanıcı Bilgisini Bul (İsim için)
+            var aliciKullanici = _context.Kullanicilar.Find(aliciHesap.KullaniciId);
+
+            // 4. Parayı Taşı
             gonderenHesap.Bakiye -= istek.Tutar;
             aliciHesap.Bakiye += istek.Tutar;
 
-            // ✅ Gönderen İçin Kayıt
+            // ✅ Gönderen İçin Kayıt (Para benden çıktı, kime gitti?)
+            // Örnek: "Alıcı: Ahmet Yılmaz - Not: Kira Ödemesi"
             _context.Islemler.Add(new Islem {
                 KullaniciId = userId,
                 IslemTuru = "Transfer (Giden)",
                 Tutar = -istek.Tutar,
-                Aciklama = $"Alıcı: {istek.AliciHesapNo}"
+                Aciklama = $"Alıcı: {aliciKullanici.Ad} {aliciKullanici.Soyad} - Not: {istek.Aciklama}"
             });
 
-            // ✅ Alan Kişi İçin Kayıt (Onun da geçmişinde gözüksün)
+            // ✅ Alan Kişi İçin Kayıt (Para bana geldi, kimden geldi?)
+            // Örnek: "Gönderen: Mehmet Demir - Not: Kira Ödemesi"
             _context.Islemler.Add(new Islem {
                 KullaniciId = aliciHesap.KullaniciId,
                 IslemTuru = "Transfer (Gelen)",
                 Tutar = istek.Tutar,
-                Aciklama = $"Gönderen: {gonderenHesap.HesapNo}"
+                Aciklama = $"Gönderen: {gonderenKullanici.Ad} {gonderenKullanici.Soyad} - Not: {istek.Aciklama}"
             });
 
             _context.SaveChanges();
