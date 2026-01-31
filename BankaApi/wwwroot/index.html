@@ -3,322 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeoBank - Dijital Bankacılık</title>
+    <title>NeoBank - İsimle Giriş</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #3b82f6;
-            --secondary: #64748b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --error: #ef4444;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* height yerine min-height daha iyidir */
-            margin: 0;
-            padding: 20px; /* Mobilde kenarlara yapışmasın */
-            box-sizing: border-box;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 450px; /* Biraz genişlettik */
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            animation: fadeIn 0.5s ease;
-            margin-bottom: 20px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 { margin-bottom: 0.5rem; font-size: 2rem; color: var(--primary); }
-        h2 { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 1.5rem; font-weight: normal; }
-        h3 { color: var(--text-main); font-size: 1rem; margin-top: 20px; margin-bottom: 10px; text-align: left; }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0;
-            background: #334155;
-            border: 1px solid #475569;
-            color: white;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            transition: 0.3s;
-        }
-
-        input:focus { outline: none; border-color: var(--primary); background: #475569; }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
-
-        .btn-green { background: var(--success); }
-        .btn-red { background: var(--error); }
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 100%; max-width: 450px; padding: 20px; }
         
-        .grid-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* BİLDİRİM KUTUSU (NOTIFICATION) */
+        #notification-area {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            padding: 15px 25px; border-radius: 8px; color: white; font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s;
+            pointer-events: none; /* Görünmezken tıklamayı engelle */
         }
+        .show-toast { opacity: 1 !important; top: 30px !important; }
 
-        .link-text {
-            margin-top: 15px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .link-text span { color: var(--primary); text-decoration: underline; }
-
-        /* Dashboard Özellikleri */
-        .balance-card {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            padding: 25px;
-            border-radius: 20px;
-            margin-top: 20px;
-            text-align: left;
-            color: white;
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
-        }
-
-        .amount { font-size: 2.5rem; font-weight: 800; margin: 10px 0; }
-        .label { font-size: 0.85rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
-        .card-number { font-family: monospace; font-size: 1.1rem; letter-spacing: 2px; }
-
+        .card { background: var(--card); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; background: #334155; border: 1px solid #475569; color: white; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { filter: brightness(1.1); }
+        .btn-red { background: #ef4444; } 
+        .btn-green { background: #10b981; }
         .hidden { display: none; }
-        .error-msg { color: var(--error); margin-top: 10px; font-size: 0.9rem; min-height: 20px; }
-        .success-msg { color: var(--success); margin-top: 10px; font-size: 0.9rem; }
-        
-        .logout-btn { background: #475569; margin-top: 25px; }
-        .logout-btn:hover { background: #334155; }
-        
-        .action-box {
-            background: #334155;
-            padding: 15px;
-            border-radius: 15px;
-            margin-top: 15px;
-        }
+        .link { color: #94a3b8; font-size: 0.9rem; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+
+        .balance-box { background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 20px; border-radius: 15px; margin: 20px 0; text-align: left; }
+        .amount { font-size: 2.2rem; font-weight: bold; margin: 5px 0; }
     </style>
 </head>
 <body>
 
+    <div id="notification-area"></div>
+
     <div class="container">
         
-        <div id="loginSection" class="card">
+        <div id="loginScreen" class="card">
             <h1>NeoBank</h1>
-            <h2>Hesabına Giriş Yap</h2>
-            <input type="text" id="loginUser" placeholder="Kullanıcı Adı">
-            <input type="text" id="loginSoyad" placeholder="Soyadınız"> <input type="password" id="loginPass" placeholder="Şifre">
-            <button onclick="girisYap()">Giriş Yap</button>
-            <div id="loginError" class="error-msg"></div>
+            <p style="color:#94a3b8;">Lütfen kimlik bilgilerinizle giriş yapın</p>
             
-            <div class="link-text" onclick="ekranGecis('register')">
-                Hesabın yok mu? <span>Kayıt Ol</span>
-            </div>
+            <input type="text" id="loginAd" placeholder="Adınız">
+            <input type="text" id="loginSoyad" placeholder="Soyadınız">
+            <input type="password" id="loginPass" placeholder="Şifre">
+            
+            <button onclick="girisYap()">Giriş Yap</button>
+            <div class="link" onclick="ekranDegistir('register')">Hesabın yok mu? Kayıt Ol</div>
         </div>
 
-        <div id="registerSection" class="card hidden">
+        <div id="registerScreen" class="card hidden">
             <h1>Kayıt Ol</h1>
-            <h2>Aramıza Katıl</h2>
-            <input type="text" id="regAd" placeholder="Adınız">       <input type="text" id="regSoyad" placeholder="Soyadınız"> <input type="text" id="regUser" placeholder="Kullanıcı Adı Seç">
+            <input type="text" id="regAd" placeholder="Adınız">
+            <input type="text" id="regSoyad" placeholder="Soyadınız">
             <input type="password" id="regPass" placeholder="Şifre Belirle">
             
-            <button onclick="kayitOl()" class="btn-green">Hesap Oluştur</button>
-            <div id="regError" class="error-msg"></div>
-            <div id="regSuccess" class="success-msg"></div>
-
-            <div class="link-text" onclick="ekranGecis('login')">
-                Zaten hesabın var mı? <span>Giriş Yap</span>
-            </div>
+            <button class="btn-green" onclick="kayitOl()">Hesap Oluştur</button>
+            <div class="link" onclick="ekranDegistir('login')">Zaten hesabın var mı? Giriş Yap</div>
         </div>
 
-        <div id="dashboardSection" class="card hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1 style="font-size: 1.5rem; margin:0;">Merhaba, <span id="displayUser">...</span>! 👋</h1>
-                <div style="background: #334155; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem;">TR</div>
-            </div>
-            
-            <div class="balance-card">
-                <div class="label">Toplam Varlık</div>
-                <div class="amount" id="displayAmount">₺ ...</div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div class="label">IBAN NO</div>
-                    <div class="card-number" id="displayIban">****</div>
-                </div>
+        <div id="dashboardScreen" class="card hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="welcomeText" style="margin:0;">Hoşgeldin</h3>
+                <button onclick="cikisYap()" class="btn-red" style="width:auto; padding:5px 15px; font-size:0.8rem;">Çıkış</button>
             </div>
 
-            <div class="action-box">
-                <h3 style="margin-top:0;">Hızlı İşlemler</h3>
-                <input type="number" id="islemTutar" placeholder="Tutar (TL)">
-                <div class="grid-buttons">
+            <div class="balance-box">
+                <div style="opacity:0.8; font-size:0.8rem;">GÜNCEL BAKİYE</div>
+                <div class="amount" id="displayBalance">...</div>
+                <div style="opacity:0.8; font-size:0.9rem;">IBAN: <span id="displayIban"></span></div>
+            </div>
+
+            <div style="background:#334155; padding:15px; border-radius:10px; margin-bottom:15px;">
+                <input type="number" id="islemTutar" placeholder="Tutar Giriniz (TL)">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-green" onclick="islemYap('yatir')">Para Yatır</button>
                     <button class="btn-red" onclick="islemYap('cek')">Para Çek</button>
                 </div>
             </div>
 
-            <div class="action-box">
-                <h3 style="margin-top:0;">Para Transferi</h3>
-                <input type="number" id="transferAlici" placeholder="Alıcı Hesap No (Örn: 123456)">
+            <div style="background:#334155; padding:15px; border-radius:10px;">
+                <input type="number" id="transferAlici" placeholder="Alıcı Hesap No">
                 <input type="number" id="transferTutar" placeholder="Gönderilecek Tutar">
-                <button onclick="transferYap()">Gönder</button>
+                <button onclick="transferYap()">Transfer Yap</button>
             </div>
-
-            <div id="statusMsg" style="margin-top:15px; font-weight:bold;"></div>
-
-            <button class="logout-btn" onclick="cikisYap()">Güvenli Çıkış</button>
         </div>
     </div>
 
     <script>
-        // DİKKAT: Terminalindeki port 5212 değilse burayı değiştir!
-        const API_URL = "http://localhost:5212/api"; 
+        const API_URL = "http://localhost:5212/api"; // Portunu kontrol et!
 
-        // --- EKRAN YÖNETİMİ ---
-        function ekranGecis(hedef) {
-            // Hataları temizle
-            document.querySelectorAll('.error-msg').forEach(e => e.innerText = '');
-            document.querySelectorAll('.success-msg').forEach(e => e.innerText = '');
-            document.getElementById("statusMsg").innerText = "";
+        // --- BİLDİRİM GÖSTERME FONKSİYONU ---
+        function notify(mesaj, tip) {
+            const notif = document.getElementById("notification-area");
+            notif.innerText = mesaj;
             
-            // Inputları temizle
-            document.querySelectorAll('input').forEach(i => i.value = '');
+            if(tip === "success") notif.style.backgroundColor = "#10b981"; // Yeşil
+            else notif.style.backgroundColor = "#ef4444"; // Kırmızı
+            
+            notif.classList.add("show-toast");
 
-            document.getElementById("loginSection").classList.add("hidden");
-            document.getElementById("registerSection").classList.add("hidden");
-            document.getElementById("dashboardSection").classList.add("hidden");
-
-            if(hedef === 'login') document.getElementById("loginSection").classList.remove("hidden");
-            else if(hedef === 'register') document.getElementById("registerSection").classList.remove("hidden");
-            else if(hedef === 'dashboard') document.getElementById("dashboardSection").classList.remove("hidden");
+            // 3 saniye sonra kaybolsun
+            setTimeout(() => {
+                notif.classList.remove("show-toast");
+            }, 3000);
         }
 
-        // --- KAYIT OL ---
+        function ekranDegistir(ekran) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden');
+            document.getElementById(ekran + 'Screen').classList.remove('hidden');
+        }
+
         async function kayitOl() {
             const veri = {
-                ad: document.getElementById("regAd").value,
-                soyad: document.getElementById("regSoyad").value,
-                kullaniciAdi: document.getElementById("regUser").value,
-                sifre: document.getElementById("regPass").value
+                ad: document.getElementById('regAd').value,
+                soyad: document.getElementById('regSoyad').value,
+                sifre: document.getElementById('regPass').value
             };
-            const errorDiv = document.getElementById("regError");
-
-            if(!veri.ad || !veri.soyad || !veri.kullaniciAdi || !veri.sifre) {
-                errorDiv.innerText = "Lütfen tüm alanları doldurun!";
-                return;
-            }
 
             try {
-                const response = await fetch(`${API_URL}/Auth/register`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                const res = await fetch(`${API_URL}/Auth/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(veri)
                 });
-
-                if (response.ok) {
-                    document.getElementById("regSuccess").innerText = "Kayıt başarılı! Yönlendiriliyorsunuz...";
-                    setTimeout(() => ekranGecis('login'), 1500);
-                } else {
-                    errorDiv.innerText = "Kayıt başarısız. " + await response.text();
+                
+                if(res.ok) { 
+                    notify("Kayıt Başarılı! Giriş yapabilirsiniz.", "success");
+                    ekranDegistir('login'); 
+                } else { 
+                    notify(await res.text(), "error"); 
                 }
-            } catch (err) {
-                errorDiv.innerText = "Sunucu hatası!";
-            }
+            } catch(e) { notify("Sunucu hatası!", "error"); }
         }
 
-        // --- GİRİŞ YAP ---
         async function girisYap() {
             const veri = {
-                kullaniciAdi: document.getElementById("loginUser").value,
-                soyad: document.getElementById("loginSoyad").value, // ✅ SOYAD KONTROLÜ
-                sifre: document.getElementById("loginPass").value
+                ad: document.getElementById('loginAd').value,
+                soyad: document.getElementById('loginSoyad').value,
+                sifre: document.getElementById('loginPass').value
             };
-            const errorDiv = document.getElementById("loginError");
 
             try {
-                const response = await fetch(`${API_URL}/Auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                const res = await fetch(`${API_URL}/Auth/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(veri)
                 });
 
-                if (!response.ok) throw new Error(await response.text());
-
-                const data = await response.json();
-                localStorage.setItem("token", data.token);
-                
-                ekranGecis('dashboard');
-                verileriGetir(); 
-
-            } catch (err) {
-                errorDiv.innerText = "Giriş başarısız! Bilgilerinizi kontrol edin.";
-            }
-        }
-
-        // --- VERİ ÇEKME & İŞLEMLER ---
-        async function verileriGetir() {
-            const token = localStorage.getItem("token");
-            const amountDiv = document.getElementById("displayAmount");
-            const ibanDiv = document.getElementById("displayIban");
-            const userSpan = document.getElementById("displayUser");
-
-            try {
-                const response = await fetch(`${API_URL}/Banka`, { 
-                    method: "GET", headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                if (response.status === 401) { cikisYap(); return; }
-
-                const data = await response.json();
-                
-                if (Array.isArray(data) && data.length > 0) {
-                    const h = data[0]; 
-                    userSpan.innerText = h.ad; // İsmi göster
-                    amountDiv.innerText = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(h.bakiye);
-                    ibanDiv.innerText = h.hesapNo;
+                if(res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('token', data.token);
+                    ekranDegistir('dashboard');
+                    verileriGetir();
+                    notify("Giriş Başarılı!", "success");
+                } else { 
+                    notify("Giriş başarısız! Bilgileri kontrol edin.", "error"); 
                 }
-            } catch (err) {
-                console.error("Veri çekme hatası", err);
+            } catch(e) { notify("Sunucuya ulaşılamadı.", "error"); }
+        }
+
+        async function verileriGetir() {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_URL}/Banka`, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            if(res.status === 401) { cikisYap(); return; }
+            
+            const data = await res.json();
+            // Backend'den { ad, soyad, bakiye, hesapNo } şeklinde tek obje geliyor
+            if(data) {
+                document.getElementById('welcomeText').innerText = `Hoşgeldin, ${data.ad} ${data.soyad}`;
+                document.getElementById('displayIban').innerText = data.hesapNo;
+                document.getElementById('displayBalance').innerText = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(data.bakiye);
             }
         }
 
-        async function islemYap(tip) { // tip: 'yatir' veya 'cek'
+        async function islemYap(tip) {
             const tutar = document.getElementById('islemTutar').value;
             const token = localStorage.getItem('token');
-            const statusDiv = document.getElementById("statusMsg");
             
-            if(!tutar) return;
+            if(!tutar) { notify("Lütfen tutar girin.", "error"); return; }
 
             const res = await fetch(`${API_URL}/Banka/${tip}`, {
                 method: 'POST',
@@ -329,57 +190,40 @@
             
             if(res.ok) { 
                 document.getElementById('islemTutar').value = "";
-                verileriGetir(); // Bakiyeyi güncelle
-                statusDiv.innerText = "İşlem Başarılı! ✅";
-                statusDiv.style.color = "#10b981";
+                verileriGetir(); 
+                notify(data.mesaj, "success"); // ✅ MESAJ BURADA ÇIKACAK
             } else { 
-                statusDiv.innerText = data || "Hata oluştu";
-                statusDiv.style.color = "#ef4444";
+                notify(data.mesaj || "Hata oluştu", "error"); 
             }
-            setTimeout(() => statusDiv.innerText = "", 3000);
         }
 
         async function transferYap() {
             const alici = document.getElementById('transferAlici').value;
             const tutar = document.getElementById('transferTutar').value;
             const token = localStorage.getItem('token');
-            const statusDiv = document.getElementById("statusMsg");
 
-            if(!alici || !tutar) return;
+            if(!alici || !tutar) { notify("Tüm alanları doldurun.", "error"); return; }
 
             const res = await fetch(`${API_URL}/Banka/transfer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ aliciHesapNo: parseInt(alici), tutar: parseFloat(tutar) })
             });
-            
             const data = await res.json();
             
             if(res.ok) {
                 document.getElementById('transferAlici').value = "";
                 document.getElementById('transferTutar').value = "";
                 verileriGetir();
-                statusDiv.innerText = "Transfer Başarılı! 🚀";
-                statusDiv.style.color = "#10b981";
+                notify(data.mesaj, "success"); // ✅ MESAJ BURADA ÇIKACAK
             } else {
-                statusDiv.innerText = typeof data === 'string' ? data : (data.mesaj || "Transfer başarısız");
-                statusDiv.style.color = "#ef4444";
+                notify(data.mesaj || "Transfer başarısız", "error");
             }
-            setTimeout(() => statusDiv.innerText = "", 3000);
         }
 
-        function cikisYap() {
-            localStorage.clear();
-            ekranGecis('login');
-        }
+        function cikisYap() { localStorage.clear(); ekranDegistir('login'); }
 
-        // Açılış kontrolü
-        if (localStorage.getItem("token")) {
-            ekranGecis('dashboard');
-            verileriGetir();
-        } else {
-            ekranGecis('login');
-        }
+        if(localStorage.getItem('token')) { ekranDegistir('dashboard'); verileriGetir(); }
     </script>
 </body>
 </html>

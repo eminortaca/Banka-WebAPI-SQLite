@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using BankaApi.Models;
 using BankaApi.Dtos;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace BankaApi.Controllers
@@ -22,19 +21,19 @@ namespace BankaApi.Controllers
             _configuration = configuration;
         }
 
-        // ✅ KAYIT OL (Ad ve Soyad Ekli)
         [HttpPost("register")]
         public IActionResult Register(KayitOlDto istek)
         {
-            if (_context.Kullanicilar.Any(k => k.KullaniciAdi == istek.KullaniciAdi))
+            // Aynı Ad ve Soyad ile kayıtlı biri var mı?
+            if (_context.Kullanicilar.Any(k => k.Ad == istek.Ad && k.Soyad == istek.Soyad))
             {
-                return BadRequest("Bu kullanıcı adı zaten alınmış.");
+                return BadRequest("Bu isim ve soyisimle zaten bir kayıt var.");
             }
 
-            // 1. Kullanıcıyı Oluştur
             var yeniKullanici = new Kullanici
             {
-                KullaniciAdi = istek.KullaniciAdi,
+                Ad = istek.Ad,
+                Soyad = istek.Soyad,
                 Sifre = istek.Sifre,
                 Role = "Musteri"
             };
@@ -42,12 +41,9 @@ namespace BankaApi.Controllers
             _context.Kullanicilar.Add(yeniKullanici);
             _context.SaveChanges();
 
-            // 2. Hesabı Oluştur (Artık Ad ve Soyad DTO'dan geliyor)
             var yeniHesap = new Hesap
             {
                 KullaniciId = yeniKullanici.Id,
-                Ad = istek.Ad,       // ✨ YENİ: Formdan gelen Ad
-                Soyad = istek.Soyad, // ✨ YENİ: Formdan gelen Soyad
                 HesapNo = new Random().Next(100000, 999999), 
                 Bakiye = 0 
             };
@@ -55,28 +51,19 @@ namespace BankaApi.Controllers
             _context.Hesaplar.Add(yeniHesap);
             _context.SaveChanges();
 
-            return Ok(new { mesaj = "Kayıt başarılı. Hesabınız oluşturuldu.", hesapNo = yeniHesap.HesapNo });
+            return Ok(new { mesaj = "Kayıt başarılı!", hesapNo = yeniHesap.HesapNo });
         }
 
-        // ✅ GİRİŞ YAP (Soyad Kontrollü)
         [HttpPost("login")]
         public IActionResult Login(GirisYapDto istek)
         {
-            // 1. Kullanıcı Adı ve Şifre Kontrolü
-            var user = _context.Kullanicilar.FirstOrDefault(k => k.KullaniciAdi == istek.KullaniciAdi && k.Sifre == istek.Sifre);
+            // ✅ GİRİŞ KONTROLÜ: Ad + Soyad + Şifre
+            var user = _context.Kullanicilar.FirstOrDefault(k => 
+                k.Ad.ToLower() == istek.Ad.ToLower() && 
+                k.Soyad.ToLower() == istek.Soyad.ToLower() && 
+                k.Sifre == istek.Sifre);
             
-            if (user == null) return Unauthorized("Kullanıcı adı veya şifre yanlış.");
-
-            // 2. ✨ YENİ: Soyad Kontrolü (Güvenlik Önlemi)
-            // Kullanıcının hesabını buluyoruz
-            var hesap = _context.Hesaplar.FirstOrDefault(h => h.KullaniciId == user.Id);
-
-            // Eğer hesap yoksa veya girilen soyad veritabanındakiyle uyuşmuyorsa REDDET
-            // ToLower() kullanarak büyük/küçük harf hatasını engelliyoruz
-            if (hesap == null || hesap.Soyad.ToLower() != istek.Soyad.ToLower())
-            {
-                return Unauthorized("Girdiğiniz Soyad kayıtlı bilgilerle uyuşmuyor!");
-            }
+            if (user == null) return Unauthorized("İsim, Soyisim veya Şifre hatalı.");
 
             var token = TokenUret(user);
             return Ok(new { token = token });
@@ -86,7 +73,8 @@ namespace BankaApi.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.KullaniciAdi),
+                new Claim(ClaimTypes.Name, user.Ad), // Artık Token'da isim var
+                new Claim(ClaimTypes.Surname, user.Soyad),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role)
             };

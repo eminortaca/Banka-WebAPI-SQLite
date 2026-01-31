@@ -1,14 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BankaApi.Models
 {
     public class Hesap
     {
-        // ✅ Kendi ID'si Guid oldu
-        public Guid Id { get; set; } = Guid.NewGuid();
+        // ✅ SENİN İSTEDİĞİN: ID artık Guid
+        public Guid Id { get; set; } = Guid.NewGuid(); 
 
-        // ✅ BAĞLANTI BURADA: Artık Kullanıcı'nın Guid ID'sini tutacak
+        // ⚠️ DİKKAT: Kullanıcı tablon 'int' kullanıyorsa burası 'int' kalmalı. 
+        // Eğer Kullanıcı tablon da Guid ise burayı da 'Guid' yapmalısın.
         public Guid KullaniciId { get; set; } 
 
-        // Transfer için kullanılan 6 haneli Banka Numarası (Bu int kalmalı, IBAN gibi düşün)
+        // Banka Numarası (Transferde kullandığımız 6 haneli sayı)
         public int HesapNo { get; set; } 
 
         public string Ad { get; set; } = string.Empty;
